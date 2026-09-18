@@ -12,7 +12,7 @@ definido.
 | Emissor | Detecção | Extração completa |
 | --- | --- | --- |
 | Inter | Sim | Sim |
-| Mercado Pago | Sim | Ainda não |
+| Mercado Pago | Sim | Sim |
 
 O parser do Inter atualmente extrai:
 
@@ -21,6 +21,9 @@ O parser do Inter atualmente extrai:
 - Transações, valores, datas, parcelas e tipos contábeis.
 - Validação entre o total declarado e a soma das transações.
 - Metadados técnicos para identificar a origem do JSON.
+
+O parser do Mercado Pago entrega o mesmo contrato, incluindo pagamentos gerais
+sem cartão e inferência do ano quando a transação informa apenas dia e mês.
 
 ## Como o processamento funciona
 
@@ -143,7 +146,6 @@ financeiro está listado.
 
 ## Próximas etapas
 
-- Implementar o parser completo do Mercado Pago.
 - Ampliar as fixtures sintéticas para novas versões de fatura.
 - Construir a API que receberá os PDFs.
 - Criar o dashboard com visualização por cartão, banco e período.

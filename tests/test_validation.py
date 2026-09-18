@@ -32,7 +32,7 @@ class BuildValidationInfoTestCase(unittest.TestCase):
         self,
         *,
         transaction_id: str,
-        card_id: str,
+        card_id: str | None,
         amount_cents: int,
         transaction_type: TransactionType = TransactionType.PURCHASE,
         included_in_statement_total: bool = True,
@@ -82,7 +82,7 @@ class BuildValidationInfoTestCase(unittest.TestCase):
         transactions.append(
             self.make_transaction(
                 transaction_id="payment-1",
-                card_id="inter:1111",
+                card_id=None,
                 amount_cents=-5_000,
                 transaction_type=TransactionType.PAYMENT,
                 included_in_statement_total=False,

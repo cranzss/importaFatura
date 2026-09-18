@@ -71,7 +71,7 @@
     },
     {
       "transaction_id": "example-transaction-4",
-      "card_id": "inter:1234",
+      "card_id": null,
       "date": "2026-07-01",
       "date_inferred": false,
       "description": "PAGAMENTO DA FATURA ANTERIOR",

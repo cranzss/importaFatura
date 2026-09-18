@@ -45,6 +45,9 @@ def build_validation_info(
 
     computed_total_by_card: dict[str, int] = {}
     for transaction in included_transactions:
+        if transaction.card_id is None:
+            continue
+
         computed_total_by_card[transaction.card_id] = (
             computed_total_by_card.get(transaction.card_id, 0)
             + transaction.amount_cents

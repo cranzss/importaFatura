@@ -9,6 +9,7 @@ from tempfile import NamedTemporaryFile
 
 from fatura_parser.issuer_detector import IssuerDetectionError
 from fatura_parser.parsers.inter import InterParserError
+from fatura_parser.parsers.mercado_pago import MercadoPagoParserError
 from fatura_parser.pdf_extractor import PdfExtractionError, extract_pdf
 from fatura_parser.statement_parser import (
     StatementParserError,
@@ -183,6 +184,7 @@ def main(arguments: Sequence[str] | None = None) -> int:
         InterParserError,
         IssuerDetectionError,
         JsonExportError,
+        MercadoPagoParserError,
         OSError,
         PdfExtractionError,
         StatementParserError,

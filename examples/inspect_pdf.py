@@ -10,6 +10,7 @@ from fatura_parser import (
     InterParserError,
     Issuer,
     IssuerDetectionError,
+    MercadoPagoParserError,
     PdfExtractionError,
     build_source_info,
     build_validation_info,
@@ -17,6 +18,9 @@ from fatura_parser import (
     parse_inter_statement_info,
     parse_inter_card_summaries,
     parse_inter_transactions,
+    parse_mercado_pago_card_summaries,
+    parse_mercado_pago_statement_info,
+    parse_mercado_pago_transactions,
 )
 
 
@@ -114,6 +118,11 @@ def main(arguments: Sequence[str] | None = None) -> int:
             statement = parse_inter_statement_info(document)
         except InterParserError as error:
             statement_error = str(error)
+    elif source is not None and source.issuer is Issuer.MERCADO_PAGO:
+        try:
+            statement = parse_mercado_pago_statement_info(document)
+        except MercadoPagoParserError as error:
+            statement_error = str(error)
 
     if parsed_arguments.show_sensitive_data:
         print(f"Arquivo: {document.filename}")
@@ -139,7 +148,7 @@ def main(arguments: Sequence[str] | None = None) -> int:
         else:
             print("\nStatementInfo: extraído com sucesso (dados ocultos).")
     elif statement_error is not None:
-        print(f"\nResumo do Inter não reconhecido: {statement_error}")
+        print(f"\nResumo da fatura não reconhecido: {statement_error}")
 
     card_summaries = None
     card_summaries_error = None
@@ -147,6 +156,11 @@ def main(arguments: Sequence[str] | None = None) -> int:
         try:
             card_summaries = parse_inter_card_summaries(document)
         except InterParserError as error:
+            card_summaries_error = str(error)
+    elif source is not None and source.issuer is Issuer.MERCADO_PAGO:
+        try:
+            card_summaries = parse_mercado_pago_card_summaries(document)
+        except MercadoPagoParserError as error:
             card_summaries_error = str(error)
 
     if card_summaries is not None:
@@ -166,7 +180,7 @@ def main(arguments: Sequence[str] | None = None) -> int:
             print("\nCardSummaries: extraído com sucesso (dados ocultos).")
     elif card_summaries_error is not None:
         print(
-            "\nResumo dos Cartões Inter não reconhecido: "
+            "\nResumo dos cartões não reconhecido: "
             f"{card_summaries_error}"
         )
 
@@ -176,6 +190,11 @@ def main(arguments: Sequence[str] | None = None) -> int:
         try:
             transactions = parse_inter_transactions(document)
         except InterParserError as error:
+            transactions_error = str(error)
+    elif source is not None and source.issuer is Issuer.MERCADO_PAGO:
+        try:
+            transactions = parse_mercado_pago_transactions(document)
+        except MercadoPagoParserError as error:
             transactions_error = str(error)
 
     if transactions is not None:
@@ -195,7 +214,7 @@ def main(arguments: Sequence[str] | None = None) -> int:
             print("\nTransactions: extraído com sucesso (dados ocultos).")
     elif transactions_error is not None:
         print(
-            "\nTransações do Inter não reconhecidas: "
+            "\nTransações da fatura não reconhecidas: "
             f"{transactions_error}"
         )
 

@@ -425,7 +425,7 @@ class StatementParseResultTestCase(unittest.TestCase):
             ),
             Transaction(
                 transaction_id="example-transaction-4",
-                card_id="inter:1234",
+                card_id=None,
                 date=date(2026, 7, 1),
                 date_inferred=False,
                 description="PAGAMENTO DA FATURA ANTERIOR",
@@ -677,13 +677,29 @@ class TransactionTestCase(unittest.TestCase):
 
     def test_accepts_a_payment_outside_the_current_total(self) -> None:
         transaction = self.make_transaction(
+            card_id=None,
             amount_cents=-12000,
             type=TransactionType.PAYMENT,
             included_in_statement_total=False,
         )
 
+        self.assertIsNone(transaction.card_id)
         self.assertEqual(transaction.amount_cents, -12000)
         self.assertFalse(transaction.included_in_statement_total)
+
+    def test_rejects_a_cardless_transaction_included_in_the_total(self) -> None:
+        with self.assertRaisesRegex(
+            ValidationError,
+            "cardless transaction cannot be included in statement total",
+        ):
+            self.make_transaction(card_id=None)
+
+    def test_requires_the_nullable_card_id_field(self) -> None:
+        transaction_data = self.make_transaction().model_dump()
+        transaction_data.pop("card_id")
+
+        with self.assertRaises(ValidationError):
+            Transaction.model_validate(transaction_data)
 
     def test_rejects_incorrect_signs_for_known_types(self) -> None:
         invalid_cases = [
