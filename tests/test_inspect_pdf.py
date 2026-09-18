@@ -80,6 +80,21 @@ class InspectPdfTestCase(unittest.TestCase):
                 "build_validation_info",
                 return_value=self.validation,
             ),
+            patch.object(
+                inspect_pdf,
+                "parse_mercado_pago_statement_info",
+                return_value=self.statement,
+            ),
+            patch.object(
+                inspect_pdf,
+                "parse_mercado_pago_card_summaries",
+                return_value=[self.card],
+            ),
+            patch.object(
+                inspect_pdf,
+                "parse_mercado_pago_transactions",
+                return_value=[self.transaction],
+            ),
         ]
         self.mocks = [patcher.start() for patcher in patchers]
         for patcher in patchers:
@@ -148,6 +163,20 @@ class InspectPdfTestCase(unittest.TestCase):
             Path("statement.pdf"),
             password=None,
         )
+
+    def test_uses_mercado_pago_parsers_for_a_mercado_pago_pdf(self) -> None:
+        self.source.issuer = Issuer.MERCADO_PAGO
+
+        with redirect_stdout(StringIO()):
+            exit_code = inspect_pdf.main(["statement.pdf"])
+
+        self.assertEqual(exit_code, 0)
+        self.mocks[2].assert_not_called()
+        self.mocks[3].assert_not_called()
+        self.mocks[4].assert_not_called()
+        self.mocks[6].assert_called_once_with(self.document)
+        self.mocks[7].assert_called_once_with(self.document)
+        self.mocks[8].assert_called_once_with(self.document)
 
 
 if __name__ == "__main__":

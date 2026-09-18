@@ -3,7 +3,6 @@ import unittest
 
 from fatura_parser import (
     Issuer,
-    StatementParserNotImplementedError,
     TransactionType,
     parse_statement,
 )
@@ -49,6 +48,28 @@ Total CARTÃO 0000****1111 R$ 30,00
             transactions_page_text,
         )
 
+    def create_mercado_pago_document(self) -> ExtractedPdf:
+        first_page_text = """Mercado Pago
+Total a pagar Vence em Limite total Saque total
+R$ 300,00 15/01/2030 R$ 10.000,00 R$ 0,00
+"""
+        transactions_page_text = """Detalhes de consumo
+10/01 Pagamento da fatura anterior R$ 500,00
+Cartão Visa [************1111]
+08/01 COMPRA EXEMPLO A R$ 100,00
+09/01 COMPRA EXEMPLO B Parcela 02 de 05 R$ 200,00
+Total R$ 300,00
+"""
+        information_page_text = """Informações adicionais
+Fechamento da fatura 10/01/2030
+O valor mínimo que você deve pagar é de R$ 45,00.
+"""
+        return self.create_document(
+            first_page_text,
+            transactions_page_text,
+            information_page_text,
+        )
+
     def test_builds_the_complete_inter_statement_result(self) -> None:
         result = parse_statement(self.create_inter_document())
 
@@ -72,16 +93,21 @@ Total CARTÃO 0000****1111 R$ 30,00
         self.assertEqual(json_data["cards"][0]["card_last_four"], "1111")
         self.assertEqual(len(json_data["transactions"]), 2)
 
-    def test_rejects_an_issuer_whose_parser_is_not_implemented(self) -> None:
-        document = self.create_document(
-            "Pague pelo app Mercado Pago",
-        )
+    def test_builds_the_complete_mercado_pago_statement_result(self) -> None:
+        result = parse_statement(self.create_mercado_pago_document())
 
-        with self.assertRaisesRegex(
-            StatementParserNotImplementedError,
-            "mercado_pago",
-        ):
-            parse_statement(document)
+        self.assertIs(result.parser.name, Issuer.MERCADO_PAGO)
+        self.assertEqual(result.parser.version, "0.1.0")
+        self.assertEqual(result.statement.declared_total_cents, 30_000)
+        self.assertEqual(result.cards[0].card_id, "mercado_pago:1111")
+        self.assertEqual(len(result.transactions), 3)
+        self.assertIsNone(result.transactions[0].card_id)
+        self.assertIs(result.transactions[0].type, TransactionType.PAYMENT)
+        self.assertTrue(result.validation.reconciled)
+
+        json_data = json.loads(result.model_dump_json())
+        self.assertEqual(json_data["source"]["issuer"], "mercado_pago")
+        self.assertIsNone(json_data["transactions"][0]["card_id"])
 
 
 if __name__ == "__main__":

@@ -56,7 +56,7 @@ Cada item de `transactions` contém:
 | Campo | Descrição |
 | --- | --- |
 | `transaction_id` | Identificador determinístico para detectar duplicidades. |
-| `card_id` | Cartão ao qual a movimentação pertence. |
+| `card_id` | Cartão da movimentação, ou `null` para eventos gerais da fatura. |
 | `date` | Data normalizada da movimentação. |
 | `date_inferred` | Indica se alguma parte da data foi deduzida pelo parser. |
 | `description` | Descrição original apresentada na fatura. |
@@ -96,6 +96,8 @@ reconciled = difference_cents == 0
 
 Pagamentos anteriores podem aparecer no histórico com valor negativo, mas usam
 `included_in_statement_total: false` e não alteram o total da fatura atual.
+Quando o emissor não associa esse pagamento a um cartão específico, seu
+`card_id` será `null`. Movimentações sem cartão nunca podem compor o total atual.
 
 ### Avisos de validação
 

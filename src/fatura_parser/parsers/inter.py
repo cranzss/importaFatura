@@ -5,13 +5,13 @@ import re
 from fatura_parser.enums import Issuer, TransactionType
 from fatura_parser.issuer_detector import detect_issuer
 from fatura_parser.models import CardSummary, StatementInfo, Transaction
+from fatura_parser.parsers.common import create_transaction_id
 from fatura_parser.pdf_extractor import ExtractedPdf
 from fatura_parser.value_parsers import (
     parse_brazilian_date,
     parse_brazilian_textual_date,
     parse_brl_amount_to_cents,
 )
-from hashlib import sha256
 
 
 _BRL_TEXT = r"R\$\s*(?:\d{1,3}(?:\.\d{3})+|\d+),\d{2}"
@@ -170,26 +170,6 @@ def parse_inter_card_summaries(document: ExtractedPdf) -> list[CardSummary]:
     return summaries
 
 
-def _create_transaction_id(
-    document: ExtractedPdf,
-    page_number: int,
-    line_number: int,
-) -> str:
-    """Create a deterministic ID from the transaction source location."""
-    identity_source = (
-        f"{Issuer.INTER.value}|"
-        f"{document.file_sha256}|"
-        f"{page_number}|"
-        f"{line_number}"
-    )
-
-    identity_hash = sha256(
-        identity_source.encode("utf-8")
-    ).hexdigest()
-
-    return f"txn_{identity_hash[:24]}"
-
-
 def _parse_inter_transaction_amount_to_cents(
     amount_text: str,
     credit_marker: str | None,
@@ -330,7 +310,8 @@ def parse_inter_transactions (document: ExtractedPdf) -> list[Transaction]:
                     "total": int(installment_match.group("total")),
                 }
 
-            transaction_id = _create_transaction_id(
+            transaction_id = create_transaction_id(
+                issuer=Issuer.INTER,
                 document=document,
                 page_number=page.number,
                 line_number=line_number,

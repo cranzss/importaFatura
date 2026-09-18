@@ -202,7 +202,9 @@ class Transaction(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
 
     transaction_id: str = Field(min_length=1)
-    card_id: str = Field(pattern=r"^[a-z][a-z0-9_]*:\d{4}$")
+    card_id: str | None = Field(
+        pattern=r"^[a-z][a-z0-9_]*:\d{4}$",
+    )
     date: Date
     date_inferred: bool
     description: str = Field(min_length=1)
@@ -224,7 +226,13 @@ class Transaction(BaseModel):
     @model_validator(mode="after")
     def ensure_financial_rules_are_consistent(self) -> Self:
         """Validate card reference, amount sign, and installment usage."""
-        _validate_supported_card_id(self.card_id)
+        if self.card_id is not None:
+            _validate_supported_card_id(self.card_id)
+
+        if self.card_id is None and self.included_in_statement_total:
+            raise ValueError(
+                "cardless transaction cannot be included in statement total"
+            )
 
         if self.amount_cents == 0:
             raise ValueError("transaction amount cannot be zero")
@@ -284,10 +292,13 @@ class StatementParseResult(BaseModel):
 
         known_card_ids = set(card_ids)
         if any(
-            transaction.card_id not in known_card_ids
+            transaction.card_id is not None
+            and transaction.card_id not in known_card_ids
             for transaction in self.transactions
         ):
-            raise ValueError("every transaction must reference a known card")
+            raise ValueError(
+                "every card-linked transaction must reference a known card"
+            )
 
         if any(
             transaction.source_page > self.source.page_count

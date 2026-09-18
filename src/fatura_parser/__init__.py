@@ -28,6 +28,15 @@ from fatura_parser.parsers.inter import (
     parse_inter_card_summaries,
     parse_inter_transactions,
 )
+from fatura_parser.parsers.mercado_pago import (
+    MercadoPagoCardSummaryNotFoundError,
+    MercadoPagoParserError,
+    MercadoPagoStatementFieldNotFoundError,
+    UnexpectedMercadoPagoDocumentError,
+    parse_mercado_pago_card_summaries,
+    parse_mercado_pago_statement_info,
+    parse_mercado_pago_transactions,
+)
 from fatura_parser.pdf_extractor import (
     ExtractedPage,
     ExtractedPdf,
@@ -68,6 +77,9 @@ __all__ = [
     "InterCardSummaryNotFoundError",
     "Issuer",
     "IssuerDetectionError",
+    "MercadoPagoCardSummaryNotFoundError",
+    "MercadoPagoParserError",
+    "MercadoPagoStatementFieldNotFoundError",
     "ParserInfo",
     "PdfExtractionError",
     "PdfFileNotFoundError",
@@ -83,6 +95,7 @@ __all__ = [
     "Transaction",
     "TransactionType",
     "UnexpectedInterDocumentError",
+    "UnexpectedMercadoPagoDocumentError",
     "UnsupportedIssuerError",
     "ValueParsingError",
     "ValidationInfo",
@@ -97,6 +110,9 @@ __all__ = [
     "parse_inter_statement_info",
     "parse_inter_card_summaries",
     "parse_inter_transactions",
+    "parse_mercado_pago_card_summaries",
+    "parse_mercado_pago_statement_info",
+    "parse_mercado_pago_transactions",
     "parse_statement",
     "parse_brazilian_textual_date",
 ]
