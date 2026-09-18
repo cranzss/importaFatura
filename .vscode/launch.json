@@ -1,0 +1,44 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Inspecionar fatura (modo protegido)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/examples/inspect_pdf.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "${workspaceFolder}/samples/private/${input:pdfFilename}"
+      ]
+    },
+    {
+      "name": "Inspecionar página (dados sensíveis)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/examples/inspect_pdf.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "${workspaceFolder}/samples/private/${input:pdfFilename}",
+        "--show-sensitive-data",
+        "--page",
+        "${input:pageNumber}"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "pdfFilename",
+      "type": "promptString",
+      "description": "Nome do PDF dentro de samples/private",
+      "default": "fatura-exemplo.pdf"
+    },
+    {
+      "id": "pageNumber",
+      "type": "promptString",
+      "description": "Número da página que será exibida",
+      "default": "1"
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+"""Public interface for the statement parser package."""
+
+from fatura_parser.enums import Issuer, TransactionType
+from fatura_parser.issuer_detector import (
+    AmbiguousIssuerError,
+    IssuerDetectionError,
+    UnsupportedIssuerError,
+    build_source_info,
+    detect_issuer,
+)
+from fatura_parser.models import (
+    CardSummary,
+    Installment,
+    ParserInfo,
+    SourceInfo,
+    StatementParseResult,
+    StatementInfo,
+    Transaction,
+    ValidationInfo,
+    ValidationWarning,
+)
+from fatura_parser.parsers.inter import (
+    InterParserError,
+    InterStatementFieldNotFoundError,
+    InterCardSummaryNotFoundError,
+    UnexpectedInterDocumentError,
+    parse_inter_statement_info,
+    parse_inter_card_summaries,
+    parse_inter_transactions,
+)
+from fatura_parser.pdf_extractor import (
+    ExtractedPage,
+    ExtractedPdf,
+    ExtractedWord,
+    InvalidPdfError,
+    PdfExtractionError,
+    PdfFileNotFoundError,
+    PdfPasswordError,
+    PdfTextNotFoundError,
+    PdfTooLargeError,
+    PdfTooManyPagesError,
+    calculate_file_sha256,
+    extract_pdf,
+)
+from fatura_parser.statement_parser import (
+    StatementParserError,
+    StatementParserNotImplementedError,
+    parse_statement,
+)
+from fatura_parser.value_parsers import (
+    ValueParsingError,
+    parse_brazilian_date,
+    parse_brazilian_textual_date,
+    parse_brl_amount_to_cents,
+)
+from fatura_parser.validation import build_validation_info
+
+__all__ = [
+    "AmbiguousIssuerError",
+    "CardSummary",
+    "ExtractedPage",
+    "ExtractedPdf",
+    "ExtractedWord",
+    "Installment",
+    "InvalidPdfError",
+    "InterParserError",
+    "InterStatementFieldNotFoundError",
+    "InterCardSummaryNotFoundError",
+    "Issuer",
+    "IssuerDetectionError",
+    "ParserInfo",
+    "PdfExtractionError",
+    "PdfFileNotFoundError",
+    "PdfPasswordError",
+    "PdfTextNotFoundError",
+    "PdfTooLargeError",
+    "PdfTooManyPagesError",
+    "SourceInfo",
+    "StatementParseResult",
+    "StatementInfo",
+    "StatementParserError",
+    "StatementParserNotImplementedError",
+    "Transaction",
+    "TransactionType",
+    "UnexpectedInterDocumentError",
+    "UnsupportedIssuerError",
+    "ValueParsingError",
+    "ValidationInfo",
+    "ValidationWarning",
+    "calculate_file_sha256",
+    "build_source_info",
+    "build_validation_info",
+    "detect_issuer",
+    "extract_pdf",
+    "parse_brazilian_date",
+    "parse_brl_amount_to_cents",
+    "parse_inter_statement_info",
+    "parse_inter_card_summaries",
+    "parse_inter_transactions",
+    "parse_statement",
+    "parse_brazilian_textual_date",
+]

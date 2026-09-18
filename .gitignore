@@ -1,0 +1,28 @@
+# PDFs podem conter dados financeiros e são ignorados em qualquer pasta.
+*.[pP][dD][fF]
+
+# A pasta privada também pode conter JSONs e outros dados financeiros.
+samples/private/
+
+# Arquivos produzidos pelo programa podem ser recriados a qualquer momento.
+output/
+
+# Ambiente virtual e arquivos temporários gerados pelo Python.
+.venv/
+__pycache__/
+*.py[cod]
+
+# Dados locais de configuração podem conter senhas e outros segredos.
+.env
+.env.*
+!.env.example
+
+# Arquivos temporários das ferramentas de teste e análise.
+.pytest_cache/
+.mypy_cache/
+.coverage
+
+# Artefatos criados ao empacotar o projeto Python.
+build/
+dist/
+*.egg-info/
