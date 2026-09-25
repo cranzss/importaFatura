@@ -103,6 +103,10 @@ A API ficará disponível em `http://127.0.0.1:8000`. Para confirmar que o
 processo está respondendo, acesse `http://127.0.0.1:8000/health`. A documentação
 interativa gerada pelo FastAPI fica em `http://127.0.0.1:8000/docs`.
 
+Ao iniciar, a aplicação cria o banco SQLite local em
+`data/fatura_parser.db`. O diretório `data/` e arquivos SQLite são ignorados
+pelo Git porque futuramente conterão usuários e informações financeiras.
+
 ## Inspecionando a extração
 
 O inspetor mostra informações técnicas e oculta os dados financeiros por
@@ -135,10 +139,13 @@ necessária ou deve ser adicionada às fixtures.
 | Caminho | Responsabilidade |
 | --- | --- |
 | `src/fatura_parser/` | Código principal da biblioteca e da CLI. |
+| `src/fatura_parser/api/` | Aplicação HTTP criada com FastAPI. |
+| `src/fatura_parser/database/` | Conexão, sessões e configurações do SQLite. |
 | `src/fatura_parser/parsers/` | Regras específicas de cada emissor. |
 | `tests/` | Testes automatizados com dados sintéticos. |
 | `examples/` | Inspetor didático e exemplo do JSON final. |
 | `docs/` | Contrato JSON e gerenciamento de dependências. |
+| `data/` | Banco local privado, sempre ignorado pelo Git. |
 | `samples/private/` | PDFs reais locais, sempre ignorados pelo Git. |
 | `output/` | JSONs gerados localmente, também ignorados pelo Git. |
 
@@ -164,5 +171,6 @@ financeiro está listado.
 ## Próximas etapas
 
 - Ampliar as fixtures sintéticas para novas versões de fatura.
-- Construir a API que receberá os PDFs.
+- Criar usuários, autenticação e o endpoint protegido de importação.
+- Persistir faturas, cartões e transações no banco local.
 - Criar o dashboard com visualização por cartão, banco e período.
