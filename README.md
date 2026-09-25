@@ -91,6 +91,18 @@ O exportador bloqueia por padrão resultados com divergências ou avisos. A opç
 `--allow-warnings` existe somente para gerar um arquivo destinado à revisão
 manual.
 
+## Executando a API local
+
+Inicie o servidor de desenvolvimento na raiz do projeto:
+
+```powershell
+.venv\Scripts\python.exe -m uvicorn fatura_parser.api:app --reload
+```
+
+A API ficará disponível em `http://127.0.0.1:8000`. Para confirmar que o
+processo está respondendo, acesse `http://127.0.0.1:8000/health`. A documentação
+interativa gerada pelo FastAPI fica em `http://127.0.0.1:8000/docs`.
+
 ## Inspecionando a extração
 
 O inspetor mostra informações técnicas e oculta os dados financeiros por
