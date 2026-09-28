@@ -16,6 +16,10 @@ _ISSUER_SIGNATURES: dict[Issuer, tuple[str, ...]] = {
         "app mercado pago",
         "mercado pago",
     ),
+    Issuer.ITAU: (
+        "banco itaú s.a.",
+        "itau unibanco holding s.a.",
+    ),
 }
 
 

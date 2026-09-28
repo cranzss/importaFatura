@@ -95,6 +95,21 @@ class InspectPdfTestCase(unittest.TestCase):
                 "parse_mercado_pago_transactions",
                 return_value=[self.transaction],
             ),
+            patch.object(
+                inspect_pdf,
+                "parse_itau_statement_info",
+                return_value=self.statement,
+            ),
+            patch.object(
+                inspect_pdf,
+                "parse_itau_card_summaries",
+                return_value=[self.card],
+            ),
+            patch.object(
+                inspect_pdf,
+                "parse_itau_transactions",
+                return_value=[self.transaction],
+            ),
         ]
         self.mocks = [patcher.start() for patcher in patchers]
         for patcher in patchers:
@@ -177,6 +192,20 @@ class InspectPdfTestCase(unittest.TestCase):
         self.mocks[6].assert_called_once_with(self.document)
         self.mocks[7].assert_called_once_with(self.document)
         self.mocks[8].assert_called_once_with(self.document)
+
+    def test_uses_itau_parsers_for_an_itau_pdf(self) -> None:
+        self.source.issuer = Issuer.ITAU
+
+        with redirect_stdout(StringIO()):
+            exit_code = inspect_pdf.main(["statement.pdf"])
+
+        self.assertEqual(exit_code, 0)
+        self.mocks[2].assert_not_called()
+        self.mocks[3].assert_not_called()
+        self.mocks[4].assert_not_called()
+        self.mocks[9].assert_called_once_with(self.document)
+        self.mocks[10].assert_called_once_with(self.document)
+        self.mocks[11].assert_called_once_with(self.document)
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ class Issuer(StrEnum):
 
     INTER = "inter"
     MERCADO_PAGO = "mercado_pago"
+    ITAU = "itau"
 
 
 class TransactionType(StrEnum):

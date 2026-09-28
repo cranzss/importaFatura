@@ -7,7 +7,7 @@ class IssuerTestCase(unittest.TestCase):
     def test_contains_the_supported_issuers(self) -> None:
         self.assertEqual(
             [issuer.value for issuer in Issuer],
-            ["inter", "mercado_pago"],
+            ["inter", "mercado_pago", "itau"],
         )
 
     def test_rejects_an_unsupported_issuer(self) -> None:

@@ -94,10 +94,14 @@ difference_cents = declared_total_cents - computed_total_cents
 reconciled = difference_cents == 0
 ```
 
-Pagamentos anteriores podem aparecer no histórico com valor negativo, mas usam
-`included_in_statement_total: false` e não alteram o total da fatura atual.
-Quando o emissor não associa esse pagamento a um cartão específico, seu
-`card_id` será `null`. Movimentações sem cartão nunca podem compor o total atual.
+O tratamento de pagamentos anteriores depende da composição declarada pelo
+emissor. Quando aparecem somente como histórico, usam
+`included_in_statement_total: false`. Quando fazem parte da equação impressa do
+total, podem usar `included_in_statement_total: true` e valor negativo.
+
+Movimentações gerais da fatura usam `card_id: null`. Somente os tipos `payment`
+e `other` podem compor o total sem um cartão; compras, tributos e demais cobranças
+incluídas continuam obrigadas a indicar seu `card_id`.
 
 ### Avisos de validação
 

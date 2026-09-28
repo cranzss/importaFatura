@@ -582,6 +582,84 @@ class StatementParseResultTestCase(unittest.TestCase):
         with self.assertRaises(ValidationError):
             self.make_result(cards=cards)
 
+    def test_accepts_card_totals_after_statement_level_movements(self) -> None:
+        cards = [
+            CardSummary(
+                card_id="itau:1234",
+                card_last_four="1234",
+                declared_total_cents=13000,
+            )
+        ]
+        transactions = [
+            Transaction(
+                transaction_id="previous-balance",
+                card_id=None,
+                date=date(2026, 8, 1),
+                date_inferred=True,
+                description="SALDO DA FATURA ANTERIOR",
+                amount_cents=10000,
+                type=TransactionType.OTHER,
+                included_in_statement_total=True,
+                installment=None,
+                source_page=1,
+            ),
+            Transaction(
+                transaction_id="payment",
+                card_id=None,
+                date=date(2026, 8, 2),
+                date_inferred=False,
+                description="PAGAMENTO",
+                amount_cents=-3000,
+                type=TransactionType.PAYMENT,
+                included_in_statement_total=True,
+                installment=None,
+                source_page=2,
+            ),
+            Transaction(
+                transaction_id="purchase",
+                card_id="itau:1234",
+                date=date(2026, 8, 3),
+                date_inferred=False,
+                description="COMPRA",
+                amount_cents=13000,
+                type=TransactionType.PURCHASE,
+                included_in_statement_total=True,
+                installment=None,
+                source_page=2,
+            ),
+        ]
+        validation = ValidationInfo(
+            transaction_count=3,
+            included_transaction_count=3,
+            computed_total_cents=20000,
+            declared_total_cents=20000,
+            difference_cents=0,
+            reconciled=True,
+            warnings=[],
+        )
+
+        result = self.make_result(
+            parser=ParserInfo(name=Issuer.ITAU, version="0.1.0"),
+            source=SourceInfo(
+                issuer=Issuer.ITAU,
+                filename="fatura-itau.pdf",
+                file_sha256="1" * 64,
+                page_count=2,
+            ),
+            statement=StatementInfo(
+                due_date=date(2026, 9, 8),
+                closing_date=date(2026, 9, 1),
+                currency="BRL",
+                declared_total_cents=20000,
+                minimum_payment_cents=2000,
+            ),
+            cards=cards,
+            transactions=transactions,
+            validation=validation,
+        )
+
+        self.assertEqual(result.cards[0].declared_total_cents, 13000)
+
     def test_accepts_an_unreconciled_result_with_an_accurate_validation(self) -> None:
         transactions = self.make_transactions()
         transactions.pop(1)
@@ -687,10 +765,27 @@ class TransactionTestCase(unittest.TestCase):
         self.assertEqual(transaction.amount_cents, -12000)
         self.assertFalse(transaction.included_in_statement_total)
 
-    def test_rejects_a_cardless_transaction_included_in_the_total(self) -> None:
+    def test_accepts_cardless_statement_level_movements_in_the_total(self) -> None:
+        cases = (
+            (TransactionType.PAYMENT, -10_000),
+            (TransactionType.OTHER, 20_000),
+        )
+
+        for transaction_type, amount_cents in cases:
+            with self.subTest(transaction_type=transaction_type):
+                transaction = self.make_transaction(
+                    card_id=None,
+                    amount_cents=amount_cents,
+                    type=transaction_type,
+                    included_in_statement_total=True,
+                )
+
+                self.assertTrue(transaction.included_in_statement_total)
+
+    def test_rejects_a_cardless_purchase_included_in_the_total(self) -> None:
         with self.assertRaisesRegex(
             ValidationError,
-            "cardless transaction cannot be included in statement total",
+            "only statement-level payments or other movements",
         ):
             self.make_transaction(card_id=None)
 
