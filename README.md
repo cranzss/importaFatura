@@ -91,6 +91,17 @@ O exportador bloqueia por padrão resultados com divergências ou avisos. A opç
 `--allow-warnings` existe somente para gerar um arquivo destinado à revisão
 manual.
 
+## Preparando o banco de dados
+
+Crie ou atualize as tabelas antes de iniciar a API:
+
+```powershell
+.venv\Scripts\python.exe -m alembic upgrade head
+```
+
+O Alembic executa somente as migrations que ainda não foram aplicadas. Por isso,
+esse comando também será usado no futuro sempre que o esquema do banco mudar.
+
 ## Executando a API local
 
 Inicie o servidor de desenvolvimento na raiz do projeto:
@@ -103,9 +114,9 @@ A API ficará disponível em `http://127.0.0.1:8000`. Para confirmar que o
 processo está respondendo, acesse `http://127.0.0.1:8000/health`. A documentação
 interativa gerada pelo FastAPI fica em `http://127.0.0.1:8000/docs`.
 
-Ao iniciar, a aplicação cria o banco SQLite local em
+As migrations e a aplicação usam o banco SQLite local em
 `data/fatura_parser.db`. O diretório `data/` e arquivos SQLite são ignorados
-pelo Git porque futuramente conterão usuários e informações financeiras.
+pelo Git porque contêm usuários e, futuramente, informações financeiras.
 
 ## Inspecionando a extração
 
@@ -140,7 +151,8 @@ necessária ou deve ser adicionada às fixtures.
 | --- | --- |
 | `src/fatura_parser/` | Código principal da biblioteca e da CLI. |
 | `src/fatura_parser/api/` | Aplicação HTTP criada com FastAPI. |
-| `src/fatura_parser/database/` | Conexão, sessões e configurações do SQLite. |
+| `src/fatura_parser/database/` | Conexão, sessões e modelos persistidos no SQLite. |
+| `migrations/` | Histórico versionado das alterações no esquema do banco. |
 | `src/fatura_parser/parsers/` | Regras específicas de cada emissor. |
 | `tests/` | Testes automatizados com dados sintéticos. |
 | `examples/` | Inspetor didático e exemplo do JSON final. |
@@ -171,6 +183,6 @@ financeiro está listado.
 ## Próximas etapas
 
 - Ampliar as fixtures sintéticas para novas versões de fatura.
-- Criar usuários, autenticação e o endpoint protegido de importação.
+- Criar o primeiro usuário e implementar autenticação por sessão.
 - Persistir faturas, cartões e transações no banco local.
 - Criar o dashboard com visualização por cartão, banco e período.

@@ -6,11 +6,13 @@ from fatura_parser.database.core import (
     DatabaseBase,
     create_database,
 )
+from fatura_parser.database.models import User
 
 
 __all__ = [
     "DEFAULT_DATABASE_PATH",
     "Database",
     "DatabaseBase",
+    "User",
     "create_database",
 ]
