@@ -102,6 +102,16 @@ Crie ou atualize as tabelas antes de iniciar a API:
 O Alembic executa somente as migrations que ainda não foram aplicadas. Por isso,
 esse comando também será usado no futuro sempre que o esquema do banco mudar.
 
+Crie o primeiro usuário local depois de aplicar as migrations:
+
+```powershell
+.venv\Scripts\fatura-parser-create-user.exe chris@example.com
+```
+
+A senha é solicitada e confirmada por entradas ocultas. Ela precisa ter entre 15
+e 128 caracteres e não é aceita como argumento do comando, evitando que apareça
+no histórico do terminal. Apenas seu hash Argon2id é armazenado no banco.
+
 ## Executando a API local
 
 Inicie o servidor de desenvolvimento na raiz do projeto:
@@ -151,6 +161,7 @@ necessária ou deve ser adicionada às fixtures.
 | --- | --- |
 | `src/fatura_parser/` | Código principal da biblioteca e da CLI. |
 | `src/fatura_parser/api/` | Aplicação HTTP criada com FastAPI. |
+| `src/fatura_parser/auth/` | Regras de e-mail, senha e usuários locais. |
 | `src/fatura_parser/database/` | Conexão, sessões e modelos persistidos no SQLite. |
 | `migrations/` | Histórico versionado das alterações no esquema do banco. |
 | `src/fatura_parser/parsers/` | Regras específicas de cada emissor. |
@@ -170,6 +181,8 @@ necessária ou deve ser adicionada às fixtures.
 - A gravação do JSON é atômica para evitar arquivos parciais.
 - Dependências são travadas com versões e hashes e podem ser auditadas.
 - Dados completos só são mostrados pelo inspetor após autorização explícita.
+- Senhas são normalizadas e protegidas com hash Argon2id e salt aleatório.
+- A criação local solicita a senha de forma oculta e exige confirmação.
 
 Antes de qualquer commit, confira `git status` e confirme que nenhum documento
 financeiro está listado.
@@ -183,6 +196,6 @@ financeiro está listado.
 ## Próximas etapas
 
 - Ampliar as fixtures sintéticas para novas versões de fatura.
-- Criar o primeiro usuário e implementar autenticação por sessão.
+- Implementar login e autenticação por sessão.
 - Persistir faturas, cartões e transações no banco local.
 - Criar o dashboard com visualização por cartão, banco e período.
