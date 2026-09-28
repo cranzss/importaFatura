@@ -8,6 +8,11 @@ from fatura_parser.parsers.inter import (
     parse_inter_statement_info,
     parse_inter_transactions,
 )
+from fatura_parser.parsers.itau import (
+    parse_itau_card_summaries,
+    parse_itau_statement_info,
+    parse_itau_transactions,
+)
 from fatura_parser.parsers.mercado_pago import (
     parse_mercado_pago_card_summaries,
     parse_mercado_pago_statement_info,
@@ -19,6 +24,7 @@ from fatura_parser.validation import build_validation_info
 
 _INTER_PARSER_VERSION = "0.1.0"
 _MERCADO_PAGO_PARSER_VERSION = "0.1.0"
+_ITAU_PARSER_VERSION = "0.1.0"
 
 
 class StatementParserError(Exception):
@@ -43,6 +49,11 @@ def parse_statement(document: ExtractedPdf) -> StatementParseResult:
         cards = parse_mercado_pago_card_summaries(document)
         transactions = parse_mercado_pago_transactions(document)
         parser_version = _MERCADO_PAGO_PARSER_VERSION
+    elif source.issuer is Issuer.ITAU:
+        statement = parse_itau_statement_info(document)
+        cards = parse_itau_card_summaries(document)
+        transactions = parse_itau_transactions(document)
+        parser_version = _ITAU_PARSER_VERSION
     else:
         raise StatementParserNotImplementedError(
             f"statement parser is not implemented for {source.issuer.value}"

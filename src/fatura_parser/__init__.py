@@ -28,6 +28,15 @@ from fatura_parser.parsers.inter import (
     parse_inter_card_summaries,
     parse_inter_transactions,
 )
+from fatura_parser.parsers.itau import (
+    ItauCardSummaryNotFoundError,
+    ItauParserError,
+    ItauStatementFieldNotFoundError,
+    UnexpectedItauDocumentError,
+    parse_itau_card_summaries,
+    parse_itau_statement_info,
+    parse_itau_transactions,
+)
 from fatura_parser.parsers.mercado_pago import (
     MercadoPagoCardSummaryNotFoundError,
     MercadoPagoParserError,
@@ -75,6 +84,9 @@ __all__ = [
     "InterParserError",
     "InterStatementFieldNotFoundError",
     "InterCardSummaryNotFoundError",
+    "ItauCardSummaryNotFoundError",
+    "ItauParserError",
+    "ItauStatementFieldNotFoundError",
     "Issuer",
     "IssuerDetectionError",
     "MercadoPagoCardSummaryNotFoundError",
@@ -95,6 +107,7 @@ __all__ = [
     "Transaction",
     "TransactionType",
     "UnexpectedInterDocumentError",
+    "UnexpectedItauDocumentError",
     "UnexpectedMercadoPagoDocumentError",
     "UnsupportedIssuerError",
     "ValueParsingError",
@@ -110,6 +123,9 @@ __all__ = [
     "parse_inter_statement_info",
     "parse_inter_card_summaries",
     "parse_inter_transactions",
+    "parse_itau_card_summaries",
+    "parse_itau_statement_info",
+    "parse_itau_transactions",
     "parse_mercado_pago_card_summaries",
     "parse_mercado_pago_statement_info",
     "parse_mercado_pago_transactions",

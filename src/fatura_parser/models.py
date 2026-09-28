@@ -195,6 +195,13 @@ _CHARGE_TYPES = frozenset(
     }
 )
 
+_CARDLESS_INCLUDED_TYPES = frozenset(
+    {
+        TransactionType.PAYMENT,
+        TransactionType.OTHER,
+    }
+)
+
 
 class Transaction(BaseModel):
     """One financial movement extracted from a statement."""
@@ -229,9 +236,14 @@ class Transaction(BaseModel):
         if self.card_id is not None:
             _validate_supported_card_id(self.card_id)
 
-        if self.card_id is None and self.included_in_statement_total:
+        if (
+            self.card_id is None
+            and self.included_in_statement_total
+            and self.type not in _CARDLESS_INCLUDED_TYPES
+        ):
             raise ValueError(
-                "cardless transaction cannot be included in statement total"
+                "only statement-level payments or other movements can be "
+                "included without a card"
             )
 
         if self.amount_cents == 0:
@@ -281,8 +293,20 @@ class StatementParseResult(BaseModel):
         declared_card_total = sum(
             card.declared_total_cents for card in self.cards
         )
-        if declared_card_total != self.statement.declared_total_cents:
-            raise ValueError("card subtotals must match the declared statement total")
+        included_cardless_total = sum(
+            transaction.amount_cents
+            for transaction in self.transactions
+            if transaction.card_id is None
+            and transaction.included_in_statement_total
+        )
+        expected_card_total = (
+            self.statement.declared_total_cents - included_cardless_total
+        )
+        if declared_card_total != expected_card_total:
+            raise ValueError(
+                "card subtotals must match the statement total after "
+                "statement-level movements"
+            )
 
         transaction_ids = [
             transaction.transaction_id for transaction in self.transactions

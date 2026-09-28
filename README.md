@@ -13,6 +13,7 @@ definido.
 | --- | --- | --- |
 | Inter | Sim | Sim |
 | Mercado Pago | Sim | Sim |
+| Itaú | Sim | Sim |
 
 O parser do Inter atualmente extrai:
 
@@ -25,13 +26,17 @@ O parser do Inter atualmente extrai:
 O parser do Mercado Pago entrega o mesmo contrato, incluindo pagamentos gerais
 sem cartão e inferência do ano quando a transação informa apenas dia e mês.
 
+O parser do Itaú também considera o saldo anterior e os pagamentos na
+reconciliação do total. Como seus lançamentos aparecem em duas colunas, ele usa
+as coordenadas das palavras no PDF para preservar a ordem e separar os blocos.
+
 ## Como o processamento funciona
 
 ```mermaid
 flowchart LR
     PDF["Fatura em PDF"] --> EXTRACT["pdf_extractor.py<br/>extrai texto e metadados"]
     EXTRACT --> DETECT["issuer_detector.py<br/>identifica o emissor"]
-    DETECT --> PARSER["parsers/inter.py<br/>interpreta os campos"]
+    DETECT --> PARSER["parsers/{emissor}.py<br/>interpreta os campos"]
     PARSER --> VALIDATE["validation.py<br/>reconcilia os valores"]
     VALIDATE --> RESULT["StatementParseResult<br/>modelo completo"]
     RESULT --> JSON["JSON padronizado"]

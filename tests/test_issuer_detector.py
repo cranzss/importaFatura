@@ -46,6 +46,13 @@ class IssuerDetectorTestCase(unittest.TestCase):
 
         self.assertIs(detect_issuer(document), Issuer.MERCADO_PAGO)
 
+    def test_detects_itau_despite_case_and_accent_variations(self) -> None:
+        document = self.create_document(
+            "Recibo emitido pelo BANCO ITAÚ S.A."
+        )
+
+        self.assertIs(detect_issuer(document), Issuer.ITAU)
+
     def test_does_not_use_the_filename_as_detection_evidence(self) -> None:
         document = self.create_document(
             "Instituição desconhecida",

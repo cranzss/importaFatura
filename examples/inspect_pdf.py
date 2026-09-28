@@ -8,6 +8,7 @@ from pathlib import Path
 
 from fatura_parser import (
     InterParserError,
+    ItauParserError,
     Issuer,
     IssuerDetectionError,
     MercadoPagoParserError,
@@ -18,6 +19,9 @@ from fatura_parser import (
     parse_inter_statement_info,
     parse_inter_card_summaries,
     parse_inter_transactions,
+    parse_itau_card_summaries,
+    parse_itau_statement_info,
+    parse_itau_transactions,
     parse_mercado_pago_card_summaries,
     parse_mercado_pago_statement_info,
     parse_mercado_pago_transactions,
@@ -123,6 +127,11 @@ def main(arguments: Sequence[str] | None = None) -> int:
             statement = parse_mercado_pago_statement_info(document)
         except MercadoPagoParserError as error:
             statement_error = str(error)
+    elif source is not None and source.issuer is Issuer.ITAU:
+        try:
+            statement = parse_itau_statement_info(document)
+        except ItauParserError as error:
+            statement_error = str(error)
 
     if parsed_arguments.show_sensitive_data:
         print(f"Arquivo: {document.filename}")
@@ -162,6 +171,11 @@ def main(arguments: Sequence[str] | None = None) -> int:
             card_summaries = parse_mercado_pago_card_summaries(document)
         except MercadoPagoParserError as error:
             card_summaries_error = str(error)
+    elif source is not None and source.issuer is Issuer.ITAU:
+        try:
+            card_summaries = parse_itau_card_summaries(document)
+        except ItauParserError as error:
+            card_summaries_error = str(error)
 
     if card_summaries is not None:
         if parsed_arguments.show_sensitive_data:
@@ -195,6 +209,11 @@ def main(arguments: Sequence[str] | None = None) -> int:
         try:
             transactions = parse_mercado_pago_transactions(document)
         except MercadoPagoParserError as error:
+            transactions_error = str(error)
+    elif source is not None and source.issuer is Issuer.ITAU:
+        try:
+            transactions = parse_itau_transactions(document)
+        except ItauParserError as error:
             transactions_error = str(error)
 
     if transactions is not None:

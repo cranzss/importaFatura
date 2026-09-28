@@ -7,6 +7,7 @@ from fatura_parser import (
     parse_statement,
 )
 from fatura_parser.pdf_extractor import ExtractedPage, ExtractedPdf
+from tests.test_itau_parser import make_itau_document
 
 
 class StatementParserTestCase(unittest.TestCase):
@@ -108,6 +109,21 @@ O valor mínimo que você deve pagar é de R$ 45,00.
         json_data = json.loads(result.model_dump_json())
         self.assertEqual(json_data["source"]["issuer"], "mercado_pago")
         self.assertIsNone(json_data["transactions"][0]["card_id"])
+
+    def test_builds_the_complete_itau_statement_result(self) -> None:
+        result = parse_statement(make_itau_document())
+
+        self.assertIs(result.parser.name, Issuer.ITAU)
+        self.assertEqual(result.parser.version, "0.1.0")
+        self.assertEqual(result.statement.declared_total_cents, 20_000)
+        self.assertEqual(result.cards[0].card_id, "itau:1111")
+        self.assertEqual(len(result.transactions), 8)
+        self.assertTrue(result.validation.reconciled)
+        self.assertEqual(result.validation.computed_total_cents, 20_000)
+
+        json_data = json.loads(result.model_dump_json())
+        self.assertEqual(json_data["source"]["issuer"], "itau")
+        self.assertEqual(json_data["cards"][0]["card_last_four"], "1111")
 
 
 if __name__ == "__main__":
