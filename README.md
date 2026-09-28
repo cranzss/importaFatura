@@ -183,6 +183,7 @@ necessária ou deve ser adicionada às fixtures.
 - Dados completos só são mostrados pelo inspetor após autorização explícita.
 - Senhas são normalizadas e protegidas com hash Argon2id e salt aleatório.
 - A criação local solicita a senha de forma oculta e exige confirmação.
+- Sessões usam tokens aleatórios; somente seus hashes são persistidos.
 
 Antes de qualquer commit, confira `git status` e confirme que nenhum documento
 financeiro está listado.
@@ -196,6 +197,6 @@ financeiro está listado.
 ## Próximas etapas
 
 - Ampliar as fixtures sintéticas para novas versões de fatura.
-- Implementar login e autenticação por sessão.
+- Expor login, logout e usuário atual pela API com cookies seguros.
 - Persistir faturas, cartões e transações no banco local.
 - Criar o dashboard com visualização por cartão, banco e período.

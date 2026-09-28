@@ -5,7 +5,11 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from fatura_parser.database import DatabaseBase, User  # noqa: F401
+from fatura_parser.database import (  # noqa: F401
+    DatabaseBase,
+    User,
+    UserSession,
+)
 
 
 config = context.config

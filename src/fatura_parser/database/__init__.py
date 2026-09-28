@@ -6,7 +6,7 @@ from fatura_parser.database.core import (
     DatabaseBase,
     create_database,
 )
-from fatura_parser.database.models import User
+from fatura_parser.database.models import User, UserSession
 
 
 __all__ = [
@@ -14,5 +14,6 @@ __all__ = [
     "Database",
     "DatabaseBase",
     "User",
+    "UserSession",
     "create_database",
 ]

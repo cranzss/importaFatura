@@ -16,7 +16,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 class MigrationTests(unittest.TestCase):
     """Verify that schema migrations can be applied and reverted."""
 
-    def test_users_migration_upgrade_and_downgrade(self) -> None:
+    def test_schema_migrations_upgrade_and_downgrade(self) -> None:
         with TemporaryDirectory() as temporary_directory:
             database_path = Path(temporary_directory) / "migration.db"
             config = Config(PROJECT_ROOT / "alembic.ini")
@@ -41,6 +41,7 @@ class MigrationTests(unittest.TestCase):
             try:
                 inspector = inspect(engine)
                 self.assertIn("users", inspector.get_table_names())
+                self.assertIn("user_sessions", inspector.get_table_names())
                 self.assertEqual(
                     {column["name"] for column in inspector.get_columns("users")},
                     {
@@ -54,6 +55,12 @@ class MigrationTests(unittest.TestCase):
                 self.assertEqual(
                     inspector.get_unique_constraints("users")[0]["column_names"],
                     ["email"],
+                )
+                self.assertEqual(
+                    inspector.get_unique_constraints("user_sessions")[0][
+                        "column_names"
+                    ],
+                    ["token_hash"],
                 )
             finally:
                 engine.dispose()
