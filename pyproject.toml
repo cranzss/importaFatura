@@ -8,12 +8,19 @@ version = "0.1.0"
 description = "Extrai faturas de cartão em PDF para um JSON padronizado."
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.17,<2",
+    "argon2-cffi>=25.1,<26",
+    "email-validator>=2.3,<3",
+    "fastapi>=0.116,<1",
     "pdfplumber>=0.11,<0.12",
     "pydantic>=2.13,<3",
+    "sqlalchemy>=2.0,<3",
+    "uvicorn>=0.35,<1",
 ]
 
 [project.optional-dependencies]
 test = [
+    "httpx2>=2.13,<3",
     "reportlab>=4,<5",
 ]
 security = [
@@ -22,6 +29,7 @@ security = [
 
 [project.scripts]
 fatura-parser = "fatura_parser.cli:main"
+fatura-parser-create-user = "fatura_parser.auth.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

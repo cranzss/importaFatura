@@ -91,6 +91,68 @@ O exportador bloqueia por padrão resultados com divergências ou avisos. A opç
 `--allow-warnings` existe somente para gerar um arquivo destinado à revisão
 manual.
 
+## Preparando o banco de dados
+
+Crie ou atualize as tabelas antes de iniciar a API:
+
+```powershell
+.venv\Scripts\python.exe -m alembic upgrade head
+```
+
+O Alembic executa somente as migrations que ainda não foram aplicadas. Por isso,
+esse comando também será usado no futuro sempre que o esquema do banco mudar.
+
+Crie o primeiro usuário local depois de aplicar as migrations:
+
+```powershell
+.venv\Scripts\fatura-parser-create-user.exe chris@example.com
+```
+
+A senha é solicitada e confirmada por entradas ocultas. Ela precisa ter entre 12
+e 128 caracteres e não é aceita como argumento do comando, evitando que apareça
+no histórico do terminal. Apenas seu hash Argon2id é armazenado no banco.
+
+## Executando a API local
+
+Inicie o servidor de desenvolvimento na raiz do projeto:
+
+```powershell
+.venv\Scripts\python.exe -m uvicorn fatura_parser.api:app --reload
+```
+
+A API ficará disponível em `http://127.0.0.1:8000`. Para confirmar que o
+processo está respondendo, acesse `http://127.0.0.1:8000/health`. A documentação
+interativa gerada pelo FastAPI fica em `http://127.0.0.1:8000/docs`.
+
+Os endpoints de autenticação são:
+
+| Método | Caminho | Responsabilidade |
+| --- | --- | --- |
+| `POST` | `/auth/login` | Valida e-mail e senha e cria o cookie de sessão. |
+| `GET` | `/auth/me` | Retorna o e-mail do usuário autenticado. |
+| `POST` | `/auth/logout` | Revoga a sessão no banco e remove o cookie. |
+
+O cookie de sessão é `HttpOnly`, usa `SameSite=Strict` e expira após 12
+horas. Em desenvolvimento local ele funciona sobre HTTP. Uma instalação com
+HTTPS deve criar a aplicação com `secure_cookies=True`.
+
+A API aceita requisições com credenciais somente das origens locais do Vite:
+`http://127.0.0.1:5173` e `http://localhost:5173`. O frontend deve usar o mesmo
+hostname para ele e para a API e enviar `credentials: "include"` nas requisições:
+
+```javascript
+fetch("http://127.0.0.1:8000/auth/me", {
+  credentials: "include",
+});
+```
+
+Outras origens são bloqueadas pelo CORS. A configuração rejeita `*` porque
+cookies autenticados exigem uma lista explícita de origens confiáveis.
+
+As migrations e a aplicação usam o banco SQLite local em
+`data/fatura_parser.db`. O diretório `data/` e arquivos SQLite são ignorados
+pelo Git porque contêm usuários e, futuramente, informações financeiras.
+
 ## Inspecionando a extração
 
 O inspetor mostra informações técnicas e oculta os dados financeiros por
@@ -123,10 +185,15 @@ necessária ou deve ser adicionada às fixtures.
 | Caminho | Responsabilidade |
 | --- | --- |
 | `src/fatura_parser/` | Código principal da biblioteca e da CLI. |
+| `src/fatura_parser/api/` | Aplicação HTTP criada com FastAPI. |
+| `src/fatura_parser/auth/` | Regras de e-mail, senha e usuários locais. |
+| `src/fatura_parser/database/` | Conexão, sessões e modelos persistidos no SQLite. |
+| `migrations/` | Histórico versionado das alterações no esquema do banco. |
 | `src/fatura_parser/parsers/` | Regras específicas de cada emissor. |
 | `tests/` | Testes automatizados com dados sintéticos. |
 | `examples/` | Inspetor didático e exemplo do JSON final. |
 | `docs/` | Contrato JSON e gerenciamento de dependências. |
+| `data/` | Banco local privado, sempre ignorado pelo Git. |
 | `samples/private/` | PDFs reais locais, sempre ignorados pelo Git. |
 | `output/` | JSONs gerados localmente, também ignorados pelo Git. |
 
@@ -139,6 +206,11 @@ necessária ou deve ser adicionada às fixtures.
 - A gravação do JSON é atômica para evitar arquivos parciais.
 - Dependências são travadas com versões e hashes e podem ser auditadas.
 - Dados completos só são mostrados pelo inspetor após autorização explícita.
+- Senhas são normalizadas e protegidas com hash Argon2id e salt aleatório.
+- A criação local solicita a senha de forma oculta e exige confirmação.
+- Sessões usam tokens aleatórios; somente seus hashes são persistidos.
+- O token de login é enviado em cookie `HttpOnly` e nunca aparece no JSON.
+- Login usa uma mensagem genérica para não revelar se um e-mail está cadastrado.
 
 Antes de qualquer commit, confira `git status` e confirme que nenhum documento
 financeiro está listado.
@@ -152,5 +224,5 @@ financeiro está listado.
 ## Próximas etapas
 
 - Ampliar as fixtures sintéticas para novas versões de fatura.
-- Construir a API que receberá os PDFs.
+- Persistir faturas, cartões e transações no banco local.
 - Criar o dashboard com visualização por cartão, banco e período.
