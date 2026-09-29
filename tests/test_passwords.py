@@ -65,11 +65,14 @@ class PasswordManagerTests(unittest.TestCase):
         assert verification.replacement_hash is not None
         self.assertTrue(verification.replacement_hash.startswith("$argon2id$"))
 
-    def test_requires_between_15_and_128_characters(self) -> None:
+    def test_requires_between_12_and_128_characters(self) -> None:
         manager = PasswordManager()
 
         with self.assertRaises(InvalidPasswordError):
-            manager.hash("curta demais")
+            manager.hash("x" * 11)
+
+        self.assertTrue(manager.hash("x" * 12).startswith("$argon2id$"))
+
         with self.assertRaises(InvalidPasswordError):
             manager.hash("x" * 129)
 

@@ -9,6 +9,7 @@ from sqlalchemy import select
 from fatura_parser.auth import (
     InvalidEmailError,
     UserAlreadyExistsError,
+    authenticate_user,
     create_user,
     normalize_email,
 )
@@ -74,3 +75,60 @@ class UserServiceTests(unittest.TestCase):
                     email="CHRIS@example.com",
                     password="segunda frase senha longa",
                 )
+
+    def test_authenticates_an_active_user_with_valid_credentials(self) -> None:
+        with self.database.session_factory() as session:
+            created_user = create_user(
+                session,
+                email="chris@example.com",
+                password="uma frase senha longa",
+            )
+            session.commit()
+
+            authenticated_user = authenticate_user(
+                session,
+                email="CHRIS@example.com",
+                password="uma frase senha longa",
+            )
+
+        self.assertIsNotNone(authenticated_user)
+        assert authenticated_user is not None
+        self.assertEqual(authenticated_user.id, created_user.id)
+
+    def test_rejects_invalid_or_inactive_credentials(self) -> None:
+        with self.database.session_factory() as session:
+            user = create_user(
+                session,
+                email="chris@example.com",
+                password="uma frase senha longa",
+            )
+            session.commit()
+
+            wrong_password = authenticate_user(
+                session,
+                email="chris@example.com",
+                password="outra frase senha longa",
+            )
+            unknown_email = authenticate_user(
+                session,
+                email="unknown@example.com",
+                password="uma frase senha longa",
+            )
+            invalid_email = authenticate_user(
+                session,
+                email="not-an-email",
+                password="uma frase senha longa",
+            )
+
+            user.is_active = False
+            session.flush()
+            inactive_user = authenticate_user(
+                session,
+                email="chris@example.com",
+                password="uma frase senha longa",
+            )
+
+        self.assertIsNone(wrong_password)
+        self.assertIsNone(unknown_email)
+        self.assertIsNone(invalid_email)
+        self.assertIsNone(inactive_user)

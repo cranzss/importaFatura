@@ -16,6 +16,7 @@ from fatura_parser.auth.sessions import (
 from fatura_parser.auth.users import (
     InvalidEmailError,
     UserAlreadyExistsError,
+    authenticate_user,
     create_user,
     normalize_email,
 )
@@ -29,6 +30,7 @@ __all__ = [
     "PasswordVerification",
     "SessionToken",
     "UserAlreadyExistsError",
+    "authenticate_user",
     "create_user",
     "create_user_session",
     "delete_expired_sessions",

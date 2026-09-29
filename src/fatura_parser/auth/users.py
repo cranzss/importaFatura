@@ -5,8 +5,15 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from fatura_parser.auth.passwords import PasswordManager
+from fatura_parser.auth.passwords import InvalidPasswordError, PasswordManager
 from fatura_parser.database import User
+
+
+_DUMMY_PASSWORD_HASH = (
+    "$argon2id$v=19$m=65536,t=3,p=4$"
+    "+nqi29KfJ4OxVSpAhxzNqg$"
+    "c4HNVVwc2c1qX8GRC+PbAuSRULWw17HnF6pHnFdiJkk"
+)
 
 
 class InvalidEmailError(ValueError):
@@ -60,5 +67,44 @@ def create_user(
         raise UserAlreadyExistsError(
             "email is already registered"
         ) from error
+
+    return user
+
+
+def authenticate_user(
+    session: Session,
+    *,
+    email: str,
+    password: str,
+    password_manager: PasswordManager | None = None,
+) -> User | None:
+    """Return an active user only when both credentials are valid."""
+    manager = password_manager or PasswordManager()
+
+    try:
+        normalized_email = normalize_email(email)
+    except InvalidEmailError:
+        normalized_email = None
+
+    user = (
+        session.scalar(select(User).where(User.email == normalized_email))
+        if normalized_email is not None
+        else None
+    )
+    password_hash = (
+        user.password_hash if user is not None else _DUMMY_PASSWORD_HASH
+    )
+
+    try:
+        verification = manager.verify(password, password_hash)
+    except InvalidPasswordError:
+        return None
+
+    if user is None or not user.is_active or not verification.valid:
+        return None
+
+    if verification.replacement_hash is not None:
+        user.password_hash = verification.replacement_hash
+        session.flush()
 
     return user

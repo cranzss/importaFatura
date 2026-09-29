@@ -7,7 +7,7 @@ from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
 
 
-MIN_PASSWORD_LENGTH = 15
+MIN_PASSWORD_LENGTH = 12
 MAX_PASSWORD_LENGTH = 128
 
 

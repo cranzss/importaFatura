@@ -108,7 +108,7 @@ Crie o primeiro usuário local depois de aplicar as migrations:
 .venv\Scripts\fatura-parser-create-user.exe chris@example.com
 ```
 
-A senha é solicitada e confirmada por entradas ocultas. Ela precisa ter entre 15
+A senha é solicitada e confirmada por entradas ocultas. Ela precisa ter entre 12
 e 128 caracteres e não é aceita como argumento do comando, evitando que apareça
 no histórico do terminal. Apenas seu hash Argon2id é armazenado no banco.
 
@@ -123,6 +123,31 @@ Inicie o servidor de desenvolvimento na raiz do projeto:
 A API ficará disponível em `http://127.0.0.1:8000`. Para confirmar que o
 processo está respondendo, acesse `http://127.0.0.1:8000/health`. A documentação
 interativa gerada pelo FastAPI fica em `http://127.0.0.1:8000/docs`.
+
+Os endpoints de autenticação são:
+
+| Método | Caminho | Responsabilidade |
+| --- | --- | --- |
+| `POST` | `/auth/login` | Valida e-mail e senha e cria o cookie de sessão. |
+| `GET` | `/auth/me` | Retorna o e-mail do usuário autenticado. |
+| `POST` | `/auth/logout` | Revoga a sessão no banco e remove o cookie. |
+
+O cookie de sessão é `HttpOnly`, usa `SameSite=Strict` e expira após 12
+horas. Em desenvolvimento local ele funciona sobre HTTP. Uma instalação com
+HTTPS deve criar a aplicação com `secure_cookies=True`.
+
+A API aceita requisições com credenciais somente das origens locais do Vite:
+`http://127.0.0.1:5173` e `http://localhost:5173`. O frontend deve usar o mesmo
+hostname para ele e para a API e enviar `credentials: "include"` nas requisições:
+
+```javascript
+fetch("http://127.0.0.1:8000/auth/me", {
+  credentials: "include",
+});
+```
+
+Outras origens são bloqueadas pelo CORS. A configuração rejeita `*` porque
+cookies autenticados exigem uma lista explícita de origens confiáveis.
 
 As migrations e a aplicação usam o banco SQLite local em
 `data/fatura_parser.db`. O diretório `data/` e arquivos SQLite são ignorados
@@ -184,6 +209,8 @@ necessária ou deve ser adicionada às fixtures.
 - Senhas são normalizadas e protegidas com hash Argon2id e salt aleatório.
 - A criação local solicita a senha de forma oculta e exige confirmação.
 - Sessões usam tokens aleatórios; somente seus hashes são persistidos.
+- O token de login é enviado em cookie `HttpOnly` e nunca aparece no JSON.
+- Login usa uma mensagem genérica para não revelar se um e-mail está cadastrado.
 
 Antes de qualquer commit, confira `git status` e confirme que nenhum documento
 financeiro está listado.
@@ -197,6 +224,5 @@ financeiro está listado.
 ## Próximas etapas
 
 - Ampliar as fixtures sintéticas para novas versões de fatura.
-- Expor login, logout e usuário atual pela API com cookies seguros.
 - Persistir faturas, cartões e transações no banco local.
 - Criar o dashboard com visualização por cartão, banco e período.
